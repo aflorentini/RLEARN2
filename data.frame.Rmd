@@ -1,0 +1,205 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+#stats::rnorm
+la funcion stats::rnorm genera n numeros al azar provenientes de una distr norm
+```{r}
+rnorm(10)
+```
+
+
+#base::data.frame
+la funcion base::data.frame crea una data frame que es una coleccion de columnas donde cada columna es un objeto (vector, lista, matriz) con el mismo numero de componentes. se puede construir un data frame con una sola variable columna.
+
+fuente: https://rpubs.com/Cesar_AHN/data_frame_crear_seleccion_de_elementos_variables_columnas_filas_agregar
+
+primero creamos vectores con un mismo numero de filas rows (n=100) para luego ensamblarlos en un data frame:
+
+```{r}
+set.seed(5)
+edad<-sample(10:30, size = 100, replace = TRUE)
+sexo<-sample(c("Masculino","Femenino"), size = 100, replace = TRUE)
+ingresos<-sample(1000:5000, size = 100, replace = TRUE)
+raza<-sample(c("blanco","negro"), size = 100, replace = TRUE)
+
+#ahora los ensamblamos en el data frame datos:
+datos<-data.frame(edad,sexo,ingresos,raza)
+
+#para ver este data frame usamos View de package utils:
+View(datos)
+```
+
+
+guia de como interpretar el archivo de ayuda de R documentation:
+con respecto a un argumento, si se le omite, entonces sera asumido la version de sintaxis de "Usage". Si "Usage" dice FALSE entonces es FALSE a menos que incluyamos el argumento diciendo TRUE 
+ADEMAS, los argumentos se separan por coma y se pueden poner en cualquier orden siempre y cuando se escriban de la forma key=value. 
+
+
+
+#base::is.factor
+lo usaremos para comprobar que los nombres de las variables de las columnas se han convertido a factor 
+```{r}
+is.factor(datos$sexo)
+is.factor(datos$raza)
+```
+
+esto demuestra que por default en la version de R>4.00 ya no se convierten los nombres de variab les columnas a factores.
+
+#utils::str
+la estructura de este data frame se puede visualizar con el comando str 
+```{r}
+str(datos)
+```
+el int, chr, es lo que arrojaria si ponemos typeof. son tipos de vectores
+
+ahora vamos a retornar al default anterior (ahora deprecado) que consistia en convertir los strings en factors
+
+
+```{r}
+datos<-data.frame(edad,sexo,ingresos,raza,stringsAsFactors=TRUE)
+str(datos)
+```
+
+vemos como lo que antes era character vector ahora es factor. Factor es distinto a vector. un Factor puede parecer strings pero es tratado como numeros porque representan diferentes levels. 
+
+```{r}
+is.vector(datos$sexo)
+is.factor(datos$sexo)
+
+```
+
+#base::names
+nos permite observar el nombre de las variables que componen el data frame
+```{r}
+names(datos)
+```
+
+#utils::head
+6 primeras lineas (default) o las que queremos
+utils::tail es similar pero las ultimas filas
+
+```{r}
+head(datos)
+head(datos, n=10L)  #10 primeras rows 
+head(datos[,1:2]) #solo muestra las 2 primeras vars 
+```
+
+#base::dim
+permite ver la dimension del data frame. 100 filas-observaciones y 4 columnas-variables, el resultado es un character vector atomico.
+
+los vectores se indexan con corchetes
+```{r}
+dim(datos)
+dim(datos)[1]
+dim(datos)[2]
+```
+
+#submuestra
+indexacion de matrices, dataframe y list usa el mismo sintaxis de corchetes.
+```{r}
+datos[1:10,] #extrae los primeros 10 rows
+datos[1:10,1:3]  #extrae los primeros 10 rows y solo muestra las 3 primeras vars 
+
+```
+
+
+#submuestra usando condiciones
+```{r}
+datos[datos$sexo=="Masculino",]  # Para extraer todas las observaciones rows que son de sexo masculino.
+head(datos[datos$sexo=="Masculino" & datos$raza=="blanco",]) # Para extraer las observaciones de sexo masculino y de raza blanco, ojo como se usa la coma para indicar row y no column extraction
+head(datos[datos$sexo=="Femenino" & datos$ingresos>=4000,]) # Para extraer las observaciones de sexo femenino y con ingresos mayores iguales a 4000.
+```
+
+
+aparentemente se puede concatenar dos juegos de corchetes, un juego despues del otro, ojo el orden es importante porq uno es procesados after the other one
+
+```{r}
+datos[datos$edad>=24 & datos$raza=="negro",][1:6,]  # Para extarer las observaciones con edad mayor igual a 24 años y de raza negro, pero que sólo muestre las primeras 6 filas (para no usar head).
+datos[datos$edad>=24 & datos$raza=="negro",][1:20,]  # Para extraer las observaciones con edad mayor igual a 24 años y de raza negro, pero sólo de las primeras 20 filas.
+```
+
+#submuestra con dplyr
+
+opcional 
+```{r}
+install.packages("dplyr")
+
+```
+usando la funcion select. select no es caps sensitive, el search term lo detecta si es mayus o minus igual 
+
+```{r}
+library(dplyr)
+head(select(datos, starts_with("e"))) # Para extraer variables que empiecen con la letra e.
+head(select(datos, ends_with("A")))   # Para extraer variables que terminan con la letra a.
+```
+
+#base::cbind para agregar columnas al dataframe
+
+
+```{r}
+set.seed(6)    #sampleamos y creamos un vector de elementos "si" y "no"
+casa<-sample(c("si","no"), size = 100, replace = TRUE)
+datos<-cbind(datos,casa)  # Agregando la columna o variable casa.
+View(datos)     # Para ver la base de datos.
+```
+
+
+#base:rbind para agregar filas al dataframe
+primero tenemos que crear otro dataframe con la misma cantidad de variables 
+ojo no olvidar primero agregar las columnas descritas en en base::cbind si no no habra concordancia al momento de ensamblar
+
+```{r}
+z<-data.frame(edad=c(20,24),
+              sexo=c("Femenino", "Femenino"),
+              ingresos=c(3000,5000),
+              raza=c("negro", "blanco"),
+              casa=c("si","si"))    # Creando un DF con las nuevas oservaciones.
+
+datos<-rbind(datos,z)   # Uniendo los nuevos dataframe. 
+tail(datos)
+
+```
+
+
+
+
+
+
+#CONTINUAR AQUI "2021-08-23 21:03:14 -05"
+
+```{r}
+Sys.time()
+```
+
+
+
+
+
+
+#base::typeof
+typeof expresa como es almacenado en memoria el objeto. es un poco inamovible
+
+#base::class
+class expresa como es representado el objeto. es un poco irrelevante porque puede ser modificado ad libitum 
+
+#base::mode
+
+
+
+
+
+
+
+
+
+
+
+#base::sample
+la funcion base::sample hace muestreos. si usamos el argumento replace como verdadero entonces lo que hemos muestreado (extraido) regresa al pool, borron y cuenta nueva, es decir cada uno de los 100 muestreos es independiente.
+```{r}
+sexo<-sample(c("Masculino","Femenino"), size = 100, replace = TRUE)
+```
+
